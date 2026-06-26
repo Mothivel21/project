@@ -3,7 +3,6 @@ import io
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from supabase import create_client, Client
-import pandas as pd
 from dotenv import load_dotenv
 
 # Load environment variables from api/.env if it exists
@@ -87,12 +86,23 @@ def export_stock():
                     v[f'supplier_{k}'] = val
             flattened_data.append(v)
             
-        df = pd.DataFrame(flattened_data)
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Stock'
+        
+        if flattened_data:
+            # Write headers
+            headers = list(flattened_data[0].keys())
+            ws.append(headers)
+            
+            # Write data rows
+            for item in flattened_data:
+                ws.append([item.get(h, "") for h in headers])
         
         # Write to Excel in memory
         output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Stock')
+        wb.save(output)
         
         output.seek(0)
         
