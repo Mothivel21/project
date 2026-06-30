@@ -336,15 +336,25 @@ export default function Stock() {
                     <thead className="bg-slate-800/80 backdrop-blur-sm sticky top-0 shadow-sm z-0">
                       <tr>
                         <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Chassis No</th>
-                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Model Details</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Engine No</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Model Code</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Model Name</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Variant</th>
                         <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Color</th>
-                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier Info</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">HSN Code</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier Code</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier Name</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier City</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier State</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier Address</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier PIN</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier GST</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-700/30">
                       {stockData.length === 0 ? (
                         <tr>
-                          <td colSpan="4" className="py-12 text-center text-slate-500">
+                          <td colSpan="14" className="py-12 text-center text-slate-500">
                             <div className="flex flex-col items-center justify-center">
                               <Package className="w-12 h-12 text-slate-600 mb-3" />
                               <p>No vehicles found in stock.</p>
@@ -354,24 +364,25 @@ export default function Stock() {
                       ) : (
                         stockData.map((vehicle) => (
                           <tr key={vehicle.chassis_no} className="hover:bg-slate-800/50 transition-colors group">
-                            <td className="py-4 px-6">
-                              <div className="font-mono text-sm font-medium text-slate-200 group-hover:text-blue-400 transition-colors">{vehicle.chassis_no}</div>
-                              <div className="text-xs text-slate-500 font-mono mt-0.5">Eng: {vehicle.engine_no}</div>
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="text-sm font-semibold text-white">{vehicle.model_name || 'N/A'}</div>
-                              <div className="text-xs text-slate-400 mt-0.5">{vehicle.model_code} • {vehicle.variant}</div>
-                            </td>
-                            <td className="py-4 px-6">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-3.5 h-3.5 rounded-full border border-slate-600 shadow-sm" style={{ backgroundColor: vehicle.color?.toLowerCase() || 'transparent' }}></div>
-                                <span className="text-sm text-slate-300 capitalize">{vehicle.color || 'N/A'}</span>
+                            <td className="py-4 px-6 text-sm font-mono text-slate-200 group-hover:text-blue-400 whitespace-nowrap">{vehicle.chassis_no}</td>
+                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.engine_no}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_code || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_name || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.variant || '-'}</td>
+                            <td className="py-4 px-6 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: vehicle.color?.toLowerCase() || 'transparent' }}></div>
+                                <span className="text-sm text-slate-300 capitalize">{vehicle.color || '-'}</span>
                               </div>
                             </td>
-                            <td className="py-4 px-6">
-                              <div className="text-sm text-slate-300">{vehicle.supplier_master?.supplier_name || 'N/A'}</div>
-                              <div className="text-xs text-slate-500 mt-0.5">{vehicle.supplier_master?.city || ''} {vehicle.supplier_master?.state ? `• ${vehicle.supplier_master?.state}` : ''}</div>
-                            </td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.hsn_code || '-'}</td>
+                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_code || '-'}</td>
+                            <td className="py-4 px-6 text-sm font-semibold text-slate-200 whitespace-nowrap">{vehicle.supplier_master?.supplier_name || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.city || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.state || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 min-w-[200px] truncate max-w-xs">{vehicle.supplier_master?.address || '-'}</td>
+                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.pin_code || '-'}</td>
+                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.gst_no || '-'}</td>
                           </tr>
                         ))
                       )}

@@ -51,7 +51,7 @@ def handle_vehicles():
 
     if request.method == 'GET':
         try:
-            response = supabase.table('vehicle_master').select('*').execute()
+            response = supabase.table('vehicle_master').select('*, supplier_master(*)').execute()
             return jsonify(response.data), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 400
