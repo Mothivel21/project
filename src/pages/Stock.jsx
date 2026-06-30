@@ -43,8 +43,9 @@ export default function Stock() {
   const fetchStock = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.table('vehicle_master').select('*, supplier_master(*)');
-      if (error) throw error;
+      const res = await fetch(`${API_BASE_URL}/vehicles`);
+      if (!res.ok) throw new Error("Failed to fetch stock");
+      const data = await res.json();
       setStockData(data);
     } catch (err) {
       console.error("Error fetching stock:", err);
