@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Search, Truck, LogOut, Package, Trash2 } from 'lucide-react';
+import { Download, Plus, Search, Truck, LogOut, Package, Trash2, Edit2, Check, X } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,9 @@ export default function Stock() {
   const [vehicleForm, setVehicleForm] = useState({
     chassis_no: '', engine_no: '', model_code: '', model_name: '', variant: '', color: '', hsn_code: '', supplier_code: ''
   });
+
+  const [editingVehicleId, setEditingVehicleId] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   useEffect(() => {
     fetchSuppliers();
@@ -89,6 +92,46 @@ export default function Stock() {
         throw new Error(errorData.error || "Failed to delete vehicle");
       }
       setFormMessage({ type: 'success', text: 'Vehicle deleted successfully!' });
+      fetchStock();
+    } catch (err) {
+      setFormMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = (vehicle) => {
+    setEditingVehicleId(vehicle.chassis_no);
+    setEditFormData({ ...vehicle });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVehicleId(null);
+    setEditFormData({});
+  };
+
+  const handleUpdateVehicle = async (chassisNo) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/vehicles/${chassisNo}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          engine_no: editFormData.engine_no,
+          model_code: editFormData.model_code,
+          model_name: editFormData.model_name,
+          variant: editFormData.variant,
+          color: editFormData.color,
+          hsn_code: editFormData.hsn_code,
+          supplier_code: editFormData.supplier_code
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update vehicle");
+      }
+      setFormMessage({ type: 'success', text: 'Vehicle updated successfully!' });
+      setEditingVehicleId(null);
       fetchStock();
     } catch (err) {
       setFormMessage({ type: 'error', text: err.message });
@@ -462,6 +505,7 @@ export default function Stock() {
                         <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier Address</th>
                         <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier PIN</th>
                         <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Supplier GST</th>
+                        <th className="py-4 px-6 font-semibold text-xs uppercase tracking-wider text-slate-400 whitespace-nowrap border-b border-slate-700">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-700/30">
@@ -477,25 +521,56 @@ export default function Stock() {
                       ) : (
                         stockData.map((vehicle) => (
                           <tr key={vehicle.chassis_no} className="hover:bg-slate-800/50 transition-colors group">
-                            <td className="py-4 px-6 text-sm font-mono text-slate-200 group-hover:text-blue-400 whitespace-nowrap">{vehicle.chassis_no}</td>
-                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.engine_no}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_code || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_name || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.variant || '-'}</td>
-                            <td className="py-4 px-6 whitespace-nowrap">
-                              <div className="flex items-center gap-2">
-                                <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: vehicle.color?.toLowerCase() || 'transparent' }}></div>
-                                <span className="text-sm text-slate-300 capitalize">{vehicle.color || '-'}</span>
-                              </div>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.hsn_code || '-'}</td>
-                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_code || '-'}</td>
-                            <td className="py-4 px-6 text-sm font-semibold text-slate-200 whitespace-nowrap">{vehicle.supplier_master?.supplier_name || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.city || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.state || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 min-w-[200px] truncate max-w-xs">{vehicle.supplier_master?.address || '-'}</td>
-                            <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.pin_code || '-'}</td>
-                            <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.gst_no || '-'}</td>
+                            {editingVehicleId === vehicle.chassis_no ? (
+                              <>
+                                <td className="py-4 px-6 text-sm font-mono text-slate-200 whitespace-nowrap">{vehicle.chassis_no}</td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.engine_no} onChange={e => setEditFormData({...editFormData, engine_no: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-24 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.model_code} onChange={e => setEditFormData({...editFormData, model_code: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-20 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.model_name} onChange={e => setEditFormData({...editFormData, model_name: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-28 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.variant} onChange={e => setEditFormData({...editFormData, variant: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-24 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.color} onChange={e => setEditFormData({...editFormData, color: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-24 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap"><input type="text" value={editFormData.hsn_code} onChange={e => setEditFormData({...editFormData, hsn_code: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-20 text-sm text-white" /></td>
+                                <td className="py-4 px-6 whitespace-nowrap">
+                                  <select value={editFormData.supplier_code} onChange={e => setEditFormData({...editFormData, supplier_code: e.target.value})} className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-white">
+                                    {suppliers.map(s => <option key={s.supplier_code} value={s.supplier_code}>{s.supplier_code}</option>)}
+                                  </select>
+                                </td>
+                                <td className="py-4 px-6 text-sm text-slate-400 whitespace-nowrap" colSpan="6">Supplier details will update on save</td>
+                                <td className="py-4 px-6 whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                    <button onClick={() => handleUpdateVehicle(vehicle.chassis_no)} className="p-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors" title="Save"><Check className="w-4 h-4" /></button>
+                                    <button onClick={handleCancelEdit} className="p-1.5 bg-slate-700/50 text-slate-400 hover:text-white rounded-lg transition-colors" title="Cancel"><X className="w-4 h-4" /></button>
+                                  </div>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td className="py-4 px-6 text-sm font-mono text-slate-200 group-hover:text-blue-400 whitespace-nowrap">{vehicle.chassis_no}</td>
+                                <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.engine_no}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_code || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.model_name || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.variant || '-'}</td>
+                                <td className="py-4 px-6 whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: vehicle.color?.toLowerCase() || 'transparent' }}></div>
+                                    <span className="text-sm text-slate-300 capitalize">{vehicle.color || '-'}</span>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.hsn_code || '-'}</td>
+                                <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_code || '-'}</td>
+                                <td className="py-4 px-6 text-sm font-semibold text-slate-200 whitespace-nowrap">{vehicle.supplier_master?.supplier_name || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.city || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.state || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 min-w-[200px] truncate max-w-xs">{vehicle.supplier_master?.address || '-'}</td>
+                                <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.pin_code || '-'}</td>
+                                <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.gst_no || '-'}</td>
+                                <td className="py-4 px-6 whitespace-nowrap">
+                                  <button onClick={() => handleEditClick(vehicle)} className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Edit Vehicle">
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </>
+                            )}
                           </tr>
                         ))
                       )}
