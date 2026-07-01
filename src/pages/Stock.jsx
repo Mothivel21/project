@@ -565,7 +565,7 @@ export default function Stock() {
                                 <td className="py-4 px-6 text-sm text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.pin_code || '-'}</td>
                                 <td className="py-4 px-6 text-sm font-mono text-slate-300 whitespace-nowrap">{vehicle.supplier_master?.gst_no || '-'}</td>
                                 <td className="py-4 px-6 whitespace-nowrap">
-                                  <button onClick={() => handleEditClick(vehicle)} className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Edit Vehicle">
+                                  <button onClick={() => handleEditClick(vehicle)} className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors" title="Edit Vehicle">
                                     <Edit2 className="w-4 h-4" />
                                   </button>
                                 </td>
