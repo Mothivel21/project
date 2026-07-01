@@ -82,6 +82,19 @@ def handle_vehicles():
         except Exception as e:
             return jsonify({"error": str(e)}), 400
 
+@app.route('/api/vehicles/<chassis_no>', methods=['DELETE'])
+def delete_vehicle(chassis_no):
+    try:
+        supabase = get_supabase()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        response = supabase.table('vehicle_master').delete().eq('chassis_no', chassis_no).execute()
+        return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 @app.route('/api/export_stock', methods=['GET'])
 def export_stock():
     try:

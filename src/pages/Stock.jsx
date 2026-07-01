@@ -23,9 +23,7 @@ export default function Stock() {
 
   useEffect(() => {
     fetchSuppliers();
-    if (activeTab === 'stock') {
-      fetchStock();
-    }
+    fetchStock();
   }, [activeTab]);
 
   const fetchSuppliers = async () => {
@@ -72,6 +70,26 @@ export default function Stock() {
       }
       setFormMessage({ type: 'success', text: 'Supplier deleted successfully!' });
       fetchSuppliers();
+    } catch (err) {
+      setFormMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteVehicle = async (chassisNo) => {
+    if (!window.confirm(`Are you sure you want to delete vehicle ${chassisNo}?`)) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/vehicles/${chassisNo}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to delete vehicle");
+      }
+      setFormMessage({ type: 'success', text: 'Vehicle deleted successfully!' });
+      fetchStock();
     } catch (err) {
       setFormMessage({ type: 'error', text: err.message });
     } finally {
@@ -357,6 +375,35 @@ export default function Stock() {
                   </button>
                 </div>
               </form>
+
+              <div className="mt-12 pt-8 border-t border-slate-700/50">
+                <h3 className="text-xl font-bold text-white tracking-tight mb-6">Existing Vehicles</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {stockData.map(vehicle => (
+                    <div key={vehicle.chassis_no} className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition-colors group">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded" title="Chassis No">{vehicle.chassis_no}</span>
+                          <button 
+                            onClick={() => handleDeleteVehicle(vehicle.chassis_no)}
+                            className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete Vehicle"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <h4 className="font-semibold text-slate-200 truncate">{vehicle.model_name || vehicle.model_code || 'Unknown Model'}</h4>
+                        <p className="text-xs text-slate-500 mt-1 truncate">Engine: {vehicle.engine_no}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {stockData.length === 0 && (
+                    <div className="col-span-full py-8 text-center text-slate-500">
+                      No vehicles registered yet.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
