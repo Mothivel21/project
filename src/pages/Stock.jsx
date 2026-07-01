@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Search, Truck, LogOut, Package } from 'lucide-react';
+import { Download, Plus, Search, Truck, LogOut, Package, Trash2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,6 +57,26 @@ export default function Stock() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
+  };
+
+  const handleDeleteSupplier = async (supplierCode) => {
+    if (!window.confirm(`Are you sure you want to delete supplier ${supplierCode}?`)) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/suppliers/${supplierCode}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to delete supplier");
+      }
+      setFormMessage({ type: 'success', text: 'Supplier deleted successfully!' });
+      fetchSuppliers();
+    } catch (err) {
+      setFormMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSupplierSubmit = async (e) => {
@@ -252,6 +272,35 @@ export default function Stock() {
                   </button>
                 </div>
               </form>
+
+              <div className="mt-12 pt-8 border-t border-slate-700/50">
+                <h3 className="text-xl font-bold text-white tracking-tight mb-6">Existing Suppliers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {suppliers.map(sup => (
+                    <div key={sup.supplier_code} className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition-colors group">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-mono text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded">{sup.supplier_code}</span>
+                          <button 
+                            onClick={() => handleDeleteSupplier(sup.supplier_code)}
+                            className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete Supplier"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <h4 className="font-semibold text-slate-200 truncate">{sup.supplier_name}</h4>
+                        <p className="text-xs text-slate-500 mt-1 truncate">{sup.city}, {sup.state}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {suppliers.length === 0 && (
+                    <div className="col-span-full py-8 text-center text-slate-500">
+                      No suppliers registered yet.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

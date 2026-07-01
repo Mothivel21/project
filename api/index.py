@@ -42,6 +42,24 @@ def handle_suppliers():
         except Exception as e:
             return jsonify({"error": str(e)}), 400
 
+@app.route('/api/suppliers/<supplier_code>', methods=['DELETE'])
+def delete_supplier(supplier_code):
+    try:
+        supabase = get_supabase()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        # Check if the supplier has associated vehicles
+        vehicles = supabase.table('vehicle_master').select('chassis_no').eq('supplier_code', supplier_code).execute()
+        if vehicles.data and len(vehicles.data) > 0:
+            return jsonify({"error": "Cannot delete supplier: vehicles are associated with it."}), 400
+            
+        response = supabase.table('supplier_master').delete().eq('supplier_code', supplier_code).execute()
+        return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 @app.route('/api/vehicles', methods=['GET', 'POST'])
 def handle_vehicles():
     try:
