@@ -177,6 +177,15 @@ export default function Stock() {
     }
   };
 
+  const groupedVehicles = stockData.reduce((acc, vehicle) => {
+    const supplierKey = vehicle.supplier_master ? `${vehicle.supplier_master.supplier_name} (${vehicle.supplier_code})` : `Unknown Supplier (${vehicle.supplier_code})`;
+    if (!acc[supplierKey]) {
+      acc[supplierKey] = [];
+    }
+    acc[supplierKey].push(vehicle);
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-200 font-sans">
       <nav className="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-10">
@@ -378,31 +387,39 @@ export default function Stock() {
 
               <div className="mt-12 pt-8 border-t border-slate-700/50">
                 <h3 className="text-xl font-bold text-white tracking-tight mb-6">Existing Vehicles</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {stockData.map(vehicle => (
-                    <div key={vehicle.chassis_no} className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition-colors group">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded" title="Chassis No">{vehicle.chassis_no}</span>
-                          <button 
-                            onClick={() => handleDeleteVehicle(vehicle.chassis_no)}
-                            className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
-                            title="Delete Vehicle"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                {stockData.length === 0 ? (
+                  <div className="py-8 text-center text-slate-500">
+                    No vehicles registered yet.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-8">
+                    {Object.entries(groupedVehicles).map(([supplier, vehicles]) => (
+                      <div key={supplier}>
+                        <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 pb-2 border-b border-slate-700/50">{supplier}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {vehicles.map(vehicle => (
+                            <div key={vehicle.chassis_no} className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition-colors group">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded" title="Chassis No">{vehicle.chassis_no}</span>
+                                  <button 
+                                    onClick={() => handleDeleteVehicle(vehicle.chassis_no)}
+                                    className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+                                    title="Delete Vehicle"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <h4 className="font-semibold text-slate-200 truncate">{vehicle.model_name || vehicle.model_code || 'Unknown Model'}</h4>
+                                <p className="text-xs text-slate-500 mt-1 truncate">Engine: {vehicle.engine_no}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <h4 className="font-semibold text-slate-200 truncate">{vehicle.model_name || vehicle.model_code || 'Unknown Model'}</h4>
-                        <p className="text-xs text-slate-500 mt-1 truncate">Engine: {vehicle.engine_no}</p>
                       </div>
-                    </div>
-                  ))}
-                  {stockData.length === 0 && (
-                    <div className="col-span-full py-8 text-center text-slate-500">
-                      No vehicles registered yet.
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
